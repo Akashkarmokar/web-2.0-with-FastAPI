@@ -1,44 +1,50 @@
 from fastapi import FastAPI
+from typing import Optional
 from pydantic import BaseModel
 
 app = FastAPI()
 
 
-class SingleBlog(BaseModel):
-    name: str
-    description: str | None = None
-    price: float
-    tax: float | None = None
-
-
-
-@app.get('/')
-def index():
-    return {'data': {'name': 'John'}}
-
-
 @app.get('/blog')
-def blogs():
-    return {
-        'data': [
-            'blog_one',
-            'blog_two'
-        ]
-    }
+def index(limit:int=10,is_published:bool=True, sort:Optional[str] = None):
+    if is_published:
+        return { 'data': f'{limit} blog from published blog'}
+    return {'data': f'{50} blog from unpublished blog'}
+
+@app.get('/blog/unpublished')
+async def unpublished():
+    # fetch unpublished blog
+    return {'data': 'It is unpublished blog'}
 
 
-@app.get('/blog/{blog_id}')
-def blog_by_blog_id(blog_id: int):
-    return blog_id
+@app.get('/blog/{id}')
+async def show(id:int = 0):
+    # fetch blog with id
+    return { 'data': id }
 
 
-@app.get('/query-param')
-def query_param(limit:int = 0, published:bool = True, sort: str | None = None):
-    print(limit, published, sort)
-    return {'data': 'Ok'}
+@app.get('/blog/{blog_id}/comments')
+async def comments(blog_id):
+    # fetch comments of blog with id = id
+    return { 'data': {'1','2'}}
 
+
+class Blog(BaseModel):
+    title: str
+    body: str
+    published: Optional[bool] = False
 
 @app.post('/blog')
-def create_single_blog(req_body: SingleBlog):
-    return req_body
+async def create_blog(blog: Blog):
+    # Create blog
+
+    return {'data': f'Blog is created with title as{blog.title} and description is {blog.body}'}
+
+
+
+
+
+
+
+
 
